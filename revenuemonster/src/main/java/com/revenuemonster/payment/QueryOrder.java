@@ -41,7 +41,7 @@ public class QueryOrder implements Runnable {
 
     public Boolean isPaymentSuccess() {
         try {
-            if (this.response.getJSONObject("item") != null) {
+            if (!this.response.isNull("item")) {
                 String status =  this.response.getJSONObject("item").get("status").toString();
                 switch (status) {
                     case "SUCCESS":
@@ -58,7 +58,7 @@ public class QueryOrder implements Runnable {
 
     public Error Error() throws Exception {
         try {
-            if (this.response.getJSONObject("error") != null) {
+            if (!this.response.isNull("error")) {
                 return new Error(this.response.getJSONObject("error"));
             }
         } catch(Exception e) {

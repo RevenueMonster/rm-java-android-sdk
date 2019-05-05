@@ -117,14 +117,15 @@ public class Checkout extends Observable {
                             queryOrderThread.start();
                             queryOrderThread.join();
                             JSONObject queryOrderResponse = queryOrder.response();
-                            if (queryOrder.Error() != null) {
-                                isLoop = false;
-                                result.onPaymentFailed(queryOrder.Error());
-                            } else if (queryOrder.isPaymentSuccess()) {
+                            if (queryOrder.isPaymentSuccess()) {
                                 isLoop = false;
                                 result.onPaymentSuccess(new Transaction(queryOrderResponse.getJSONObject("item")));
+                            } else if (queryOrder.Error() != null) {
+                                isLoop = false;
+                                result.onPaymentFailed(queryOrder.Error());
                             }
                         } catch(Exception e) {
+                            isLoop = false;
                             Log.d("RM_CHECKOUT_ERROR", e.toString());
                         }
                     } while(isLoop);

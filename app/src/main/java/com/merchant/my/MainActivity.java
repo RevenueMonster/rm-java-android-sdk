@@ -34,8 +34,8 @@ public class MainActivity extends Activity {
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                     builder.setTitle("Payment Method")
                             .setItems(new String[]{"WeChatPay MY"}, new DialogInterface.OnClickListener() {
+                                String code = "1556613893732525760";
                                 String weChatAppID = "";
-                                String code = "1556615195258028298";
                                 Method method;
                                 public void onClick(DialogInterface dialog, int which) {
                                     switch (which) {
@@ -44,7 +44,7 @@ public class MainActivity extends Activity {
                                             break;
                                     }
                                     new Checkout(MainActivity.this, code).setWeChatAppID(weChatAppID).
-                                       setEnv(Env.Sandbox).
+                                       setEnv(Env.Production).
                                        pay(method, new Result());
                                 }
                             });

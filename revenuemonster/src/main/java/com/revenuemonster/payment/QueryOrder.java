@@ -55,6 +55,19 @@ public class QueryOrder implements Runnable {
         return false;
     }
 
+    public String getTransactionStatus() {
+        try {
+            if (!this.response.isNull("item")) {
+                String status =  this.response.getJSONObject("item").get("status").toString();
+                return status;
+            }
+        } catch(Exception e) {
+            Log.e("RM_PAYMENT_FLAG_ERROR", e.toString());
+        }
+
+        return "";
+    }
+
 
     public Error Error() throws Exception {
         try {

@@ -10,4 +10,5 @@ import com.revenuemonster.payment.model.Transaction;
 public interface PaymentResult {
     void onPaymentSuccess(Transaction transaction);
     void onPaymentFailed(Error error);
+    void onPaymentCancelled();
 }

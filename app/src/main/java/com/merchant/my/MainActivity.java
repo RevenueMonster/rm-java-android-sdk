@@ -18,7 +18,7 @@ import com.revenuemonster.payment.constant.Method;
 import com.revenuemonster.payment.model.Error;
 import com.revenuemonster.payment.model.Transaction;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements PaymentResult {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setContentView(R.layout.activity_main);
@@ -34,7 +34,7 @@ public class MainActivity extends Activity {
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                     builder.setTitle("Payment Method")
                             .setItems(new String[]{"WeChatPay MY"}, new DialogInterface.OnClickListener() {
-                                String code = "1556613893732525760";
+                                String checkoutId = "1557060792141347295";
                                 String weChatAppID = "";
                                 Method method;
                                 public void onClick(DialogInterface dialog, int which) {
@@ -43,9 +43,13 @@ public class MainActivity extends Activity {
                                             method = Method.WECHATPAY_MY;
                                             break;
                                     }
-                                    new Checkout(MainActivity.this, code).setWeChatAppID(weChatAppID).
-                                       setEnv(Env.Production).
-                                       pay(method, new Result());
+                                    try {
+                                        new Checkout(getApplication()).getInstance().setWeChatAppID(weChatAppID).
+                                                setEnv(Env.Development).
+                                                pay(method, checkoutId, MainActivity.this);
+                                    } catch(Exception e) {
+                                        e.printStackTrace();
+                                    }
                                 }
                             });
                     builder.show();
@@ -61,13 +65,14 @@ public class MainActivity extends Activity {
         super.onDestroy();
     }
 
-    static public class Result implements PaymentResult {
-        public void onPaymentSuccess(Transaction transaction) {
-            Log.d("SUCCESS", transaction.getStatus());
-        }
-        public void onPaymentFailed(Error error) {
-            Log.d("FAILED", error.toString());
-        }
+    public void onPaymentSuccess(Transaction transaction) {
+        Log.d("SUCCESS", transaction.toString());
+    }
+    public void onPaymentFailed(Error error) {
+        Log.d("FAILED", error.toString());
+    }
+    public void onPaymentCancelled() {
+        Toast.makeText(this, "User cancelled payment", Toast.LENGTH_LONG).show();
     }
 }
 

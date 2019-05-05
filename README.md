@@ -25,9 +25,13 @@ dependencies {
 
 ### Checkout Sample Code
 ```java
-new Checkout(MainActivity.this, "<<Get Checkout Code from API>>").
-setWeChatAppID("<< WeChat Open Platform AppID >>").
-setEnv(Env.Sandbox).pay(Method.WECHATPAY_MY, new Result());
+try {
+	new Checkout(getApplication()).getInstance().
+	setWeChatAppID("<< WeChat Open Platform AppID >>").setEnv(Env.Sandbox).
+	pay(Method.WECHATPAY_MY, "<<Get Checkout Code from API>>", MainActivity.this);
+} catch(Exception e) {
+	e.printStackTrace();
+}
 
 // Callback Result
 static public class Result implements PaymentResult {
@@ -35,7 +39,10 @@ static public class Result implements PaymentResult {
 		Log.d("SUCCESS", transaction.getStatus());
 	}
 	public void onPaymentFailed(Error error) {
-		Log.d("FAILED", error.toString());
+		Log.d("FAILED", error.getCode());
+	}
+	public void onPaymentCancelled() {
+		Log.d("CANCELLED", "User cancelled payment");
 	}
 }
 ```

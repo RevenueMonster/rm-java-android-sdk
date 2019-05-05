@@ -8,6 +8,10 @@ import com.tencent.mm.opensdk.openapi.IWXAPIEventHandler;
 import com.tencent.mm.opensdk.openapi.WXAPIFactory;
 
 import android.app.Activity;
+import android.arch.lifecycle.Lifecycle;
+import android.arch.lifecycle.LifecycleObserver;
+import android.arch.lifecycle.LifecycleOwner;
+import android.arch.lifecycle.OnLifecycleEvent;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -42,8 +46,6 @@ public class EventListener extends Activity implements IWXAPIEventHandler {
 
     @Override
     public void onResp(BaseResp resp) {
-        Log.d("RESPONSEAPI", "onPaymentCallback: ");
-
         String result = "";
         switch (resp.errCode) {
             case BaseResp.ErrCode.ERR_OK:
@@ -63,7 +65,6 @@ public class EventListener extends Activity implements IWXAPIEventHandler {
                 break;
         }
 
-//        this.onPaymentCallback(result);
         finish();
     }
 

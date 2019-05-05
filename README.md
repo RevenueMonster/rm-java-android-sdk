@@ -27,7 +27,7 @@ dependencies {
 ```java
 new Checkout(MainActivity.this, "<<Get Checkout Code from API>>").
 setWeChatAppID("<< WeChat Open Platform AppID >>").
-setEnv(Env.Sandbox).pay(method, new Result());
+setEnv(Env.Sandbox).pay(Method.WECHATPAY_MY, new Result());
 
 // Callback Result
 static public class Result implements PaymentResult {

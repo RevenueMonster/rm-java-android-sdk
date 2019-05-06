@@ -20,9 +20,9 @@ public class Domain {
 
     public String getPaymentGatewayURL() {
         switch (this.env) {
-            case Sandbox:
+            case SANDBOX:
                 return SANDBOX_PG_URL;
-            case Development:
+            case DEVELOPMENT:
                 return DEVELOPMENT_PG_URL;
         }
 

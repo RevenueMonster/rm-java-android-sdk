@@ -5,7 +5,7 @@ package com.revenuemonster.payment.constant;
  */
 
 public enum Env {
-    Development,
-    Sandbox,
-    Production,
+    DEVELOPMENT,
+    SANDBOX,
+    PRODUCTION,
 }

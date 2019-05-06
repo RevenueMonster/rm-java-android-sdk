@@ -34,7 +34,7 @@ public class MainActivity extends Activity implements PaymentResult {
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                     builder.setTitle("Payment Method")
                             .setItems(new String[]{"WeChatPay MY"}, new DialogInterface.OnClickListener() {
-                                String checkoutId = "1557060792141347295";
+                                String checkoutId = "1557155740134737919";
                                 String weChatAppID = "";
                                 Method method;
                                 public void onClick(DialogInterface dialog, int which) {
@@ -66,10 +66,10 @@ public class MainActivity extends Activity implements PaymentResult {
     }
 
     public void onPaymentSuccess(Transaction transaction) {
-        Log.d("SUCCESS", transaction.toString());
+        Log.d("SUCCESS", transaction.getStatus());
     }
     public void onPaymentFailed(Error error) {
-        Log.d("FAILED", error.toString());
+        Log.d("FAILED", error.getMessage());
     }
     public void onPaymentCancelled() {
         Toast.makeText(this, "User cancelled payment", Toast.LENGTH_LONG).show();

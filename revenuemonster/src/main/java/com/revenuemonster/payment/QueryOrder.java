@@ -9,9 +9,6 @@ import com.revenuemonster.payment.util.HttpClient;
 
 import org.json.JSONObject;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 /**
  * Created by yussuf on 4/29/19.
  */
@@ -39,7 +36,7 @@ public class QueryOrder implements Runnable {
         }
     }
 
-    public Boolean isPaymentSuccess() {
+    public Boolean isPaymentSuccess() throws Exception {
         try {
             if (!this.response.isNull("item")) {
                 String status =  this.response.getJSONObject("item").get("status").toString();
@@ -50,12 +47,13 @@ public class QueryOrder implements Runnable {
             }
         } catch(Exception e) {
             Log.e("RM_PAYMENT_FLAG_ERROR", e.toString());
+            throw e;
         }
 
         return false;
     }
 
-    public String getTransactionStatus() {
+    public String getTransactionStatus() throws Exception {
         try {
             if (!this.response.isNull("item")) {
                 String status =  this.response.getJSONObject("item").get("status").toString();
@@ -63,6 +61,7 @@ public class QueryOrder implements Runnable {
             }
         } catch(Exception e) {
             Log.e("RM_PAYMENT_FLAG_ERROR", e.toString());
+            throw e;
         }
 
         return "";
@@ -72,7 +71,8 @@ public class QueryOrder implements Runnable {
     public Error Error() throws Exception {
         try {
             if (!this.response.isNull("error")) {
-                return new Error(this.response.getJSONObject("error"));
+                JSONObject error = this.response.getJSONObject("error");
+                return new Error(error.getString("code"), error.getString("message"));
             }
         } catch(Exception e) {
             throw e;

@@ -7,11 +7,11 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.revenuemonster.payment.constant.Env;
 import com.revenuemonster.payment.constant.Method;
 import com.revenuemonster.payment.constant.Status;
+import com.revenuemonster.payment.model.Error;
 import com.revenuemonster.payment.model.Transaction;
 import com.revenuemonster.payment.util.Domain;
 import com.revenuemonster.payment.util.HttpClient;
@@ -97,13 +97,13 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
         Method method;
         JSONObject response;
 
-        private checkout(Method method, String checkoutCode, Env env) {
+        private checkout(Method method, String checkoutCode, Env env)  {
             this.checkoutCode = checkoutCode;
             this.method = method;
             this.env = env;
         }
 
-        public void run() {
+        public void run()  {
             try {
                 JSONObject request = new JSONObject();
                 request.put("method", method);
@@ -133,19 +133,31 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
             Thread thread = new Thread(c);
             thread.start();
             thread.join();
+
             JSONObject response = c.response();
-            if (!response.isNull("error")) {
-                Toast.makeText(this.application, response.getJSONObject("error").get("message").toString(), Toast.LENGTH_LONG).show();
+            if (response == null) {
+                paymentResult.onPaymentFailed(Error.SYSTEM_BUSY);
+                return;
+            } else if (!response.isNull("error")) {
+                JSONObject error = response.getJSONObject("error");
+                paymentResult.onPaymentFailed(new Error(error.getString("code"), error.getString("message")));
+                return;
             } else {
                 String url = response.getJSONObject("item").getString("url");
                 this.isLoop = true;
                 switch (this.method) {
                     case WECHATPAY_MY:
-                        String prepayID = url;
-                        this.weChatPayMalaysia(prepayID);
+                        try {
+                            String prepayID = url;
+                            this.weChatPayMalaysia(prepayID);
+                        } catch(Exception e) {
+                            paymentResult.onPaymentFailed(new Error(Status.FAILED.toString(), e.getMessage()));
+                            return;
+                        }
                         break;
                     default:
-                        Toast.makeText(this.application, "Invalid payment method", Toast.LENGTH_LONG).show();
+                        paymentResult.onPaymentFailed(Error.INVALID_PAYMENT_METHOD);
+                        return;
                 }
             }
 
@@ -170,12 +182,13 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
                             }
                         } catch(Exception e) {
                             isLoop = false;
-                            Toast.makeText(application, "System busy", Toast.LENGTH_LONG).show();
+                            paymentResult.onPaymentFailed(Error.SYSTEM_BUSY);
                         }
                     } while(isLoop);
                 }
             });
         } catch(Exception e) {
+            paymentResult.onPaymentFailed(Error.SYSTEM_BUSY);
             throw e;
         }
     }
@@ -186,15 +199,23 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
         this.application.startActivity(intent);
     }
 
-    private void weChatPayMalaysia(String prepayID) {
-        api = WXAPIFactory.createWXAPI(this.application, this.weChatAppID);
+    private void weChatPayMalaysia(String prepayID) throws Exception {
+        try {
+            api = WXAPIFactory.createWXAPI(this.application, this.weChatAppID);
 
-        WXOpenBusinessWebview.Req req = new WXOpenBusinessWebview.Req();
-        req.businessType = 7;
-        HashMap<String, String> queryInfo = new HashMap<>();
-        queryInfo.put("prepay_id",prepayID);
-        req.queryInfo = queryInfo;
-        api.sendReq(req);
+            if (!api.isWXAppInstalled()) {
+                throw new Exception("WeChat app is not installed");
+            }
+
+            WXOpenBusinessWebview.Req req = new WXOpenBusinessWebview.Req();
+            req.businessType = 7;
+            HashMap<String, String> queryInfo = new HashMap<>();
+            queryInfo.put("prepay_id",prepayID);
+            req.queryInfo = queryInfo;
+            api.sendReq(req);
+        } catch(Exception e) {
+            throw new Exception("System busy");
+        }
     }
 
 }

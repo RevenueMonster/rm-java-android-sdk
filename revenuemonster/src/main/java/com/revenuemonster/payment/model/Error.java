@@ -1,5 +1,7 @@
 package com.revenuemonster.payment.model;
 
+import com.revenuemonster.payment.constant.Status;
+
 import org.json.JSONObject;
 
 /**
@@ -7,16 +9,16 @@ import org.json.JSONObject;
  */
 
 public class Error {
+    public static final Error SYSTEM_BUSY = new Error(Status.FAILED.toString(), "System busy");
+    public static final Error INVALID_PAYMENT_METHOD = new Error(Status.FAILED.toString(), "Invalid payment method");
+
+
     private String code;
     private String message;
 
-    public Error(JSONObject error) throws Exception {
-        try {
-            this.setCode(error.getString("code"));
-            this.setMessage(error.getString("message"));
-        } catch(Exception e) {
-            throw e;
-        }
+    public Error(String code, String message) {
+        this.setCode(code);
+        this.setMessage(message);
     }
 
     // Getter Methods

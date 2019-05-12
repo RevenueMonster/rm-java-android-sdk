@@ -1,4 +1,4 @@
-# RM Android
+# RM SDK for Android
 
 [![](https://jitpack.io/v/RevenueMonster/RM-Android.svg)](https://jitpack.io/#RevenueMonster/RM-Android)
 

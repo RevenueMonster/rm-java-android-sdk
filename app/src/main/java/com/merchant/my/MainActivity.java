@@ -34,8 +34,8 @@ public class MainActivity extends Activity implements PaymentResult {
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                     builder.setTitle("Payment Method")
                             .setItems(new String[]{"WeChatPay MY"}, new DialogInterface.OnClickListener() {
-                                String checkoutId = "1557155740134737919";
-                                String weChatAppID = "";
+                                String checkoutId = "1557307517945434968";
+                                String weChatAppID = "wx62173edb65003c7c";
                                 Method method;
                                 public void onClick(DialogInterface dialog, int which) {
                                     switch (which) {

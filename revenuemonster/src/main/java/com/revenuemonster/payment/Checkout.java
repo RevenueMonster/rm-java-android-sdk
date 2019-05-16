@@ -39,11 +39,13 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
     private static Boolean isLoop = false;
     private static PaymentResult paymentResult;
     private static Checkout instance = null;
+    private Boolean isLeaveApp = false;
 
     @Override
     public void onActivityResumed(Activity activity) {
         this.isLoop = false;
-        if(paymentResult != null && this.status.equalsIgnoreCase(Status.IN_PROCESS.toString())) {
+        if(paymentResult != null && this.status.equalsIgnoreCase(Status.IN_PROCESS.toString()) && this.isLeaveApp) {
+            this.isLeaveApp = false;
             this.paymentResult.onPaymentCancelled();
         }
     }
@@ -79,7 +81,6 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
         }
         return this;
     }
-
 
     public Checkout setWeChatAppID(String appID) {
         this.weChatAppID = appID;
@@ -206,6 +207,8 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
             if (!api.isWXAppInstalled()) {
                 throw new Exception("WeChat app is not installed");
             }
+
+            this.isLeaveApp = true;
 
             WXOpenBusinessWebview.Req req = new WXOpenBusinessWebview.Req();
             req.businessType = 7;

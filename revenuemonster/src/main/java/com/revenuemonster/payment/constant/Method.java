@@ -5,5 +5,9 @@ package com.revenuemonster.payment.constant;
  */
 
 public enum Method {
-    WECHATPAY_MY
+    WECHATPAY_MY,
+    TNG_MY,
+    BOOST_MY,
+    ALIPAY_CN,
+    GRABPAY_MY
 }

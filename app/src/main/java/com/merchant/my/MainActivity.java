@@ -3,13 +3,11 @@ package com.merchant.my;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.app.Activity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
 
 import com.revenuemonster.payment.Checkout;
 import com.revenuemonster.payment.PaymentResult;
@@ -33,8 +31,8 @@ public class MainActivity extends Activity implements PaymentResult {
                 try {
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                     builder.setTitle("Payment Method")
-                            .setItems(new String[]{"WeChatPay MY"}, new DialogInterface.OnClickListener() {
-                                String checkoutId = "1557155740134737919";
+                            .setItems(new String[]{"WeChatPay MY", "TNG", "Boost", "AliPay CN", "GrabPay"}, new DialogInterface.OnClickListener() {
+                                String checkoutId = "1562317567624508372";
                                 String weChatAppID = "";
                                 Method method;
                                 public void onClick(DialogInterface dialog, int which) {
@@ -42,9 +40,21 @@ public class MainActivity extends Activity implements PaymentResult {
                                         case 0:
                                             method = Method.WECHATPAY_MY;
                                             break;
+                                        case 1:
+                                            method = Method.TNG_MY;
+                                            break;
+                                        case 2:
+                                            method = Method.BOOST_MY;
+                                            break;
+                                        case 3:
+                                            method = Method.ALIPAY_CN;
+                                            break;
+                                        case 4:
+                                            method = Method.GRABPAY_MY;
+                                            break;
                                     }
                                     try {
-                                        new Checkout(getApplication()).getInstance().setWeChatAppID(weChatAppID).
+                                        new Checkout(MainActivity.this).getInstance().setWeChatAppID(weChatAppID).
                                                 setEnv(Env.DEVELOPMENT).
                                                 pay(method, checkoutId, MainActivity.this);
                                     } catch(Exception e) {
@@ -72,7 +82,7 @@ public class MainActivity extends Activity implements PaymentResult {
         Log.d("FAILED", error.getMessage());
     }
     public void onPaymentCancelled() {
-        Toast.makeText(this, "User cancelled payment", Toast.LENGTH_LONG).show();
+        Log.d("CANCELLED", "cancelled");
     }
 }
 

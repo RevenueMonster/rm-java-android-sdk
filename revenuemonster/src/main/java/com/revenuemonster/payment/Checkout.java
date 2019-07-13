@@ -15,6 +15,7 @@ import com.revenuemonster.payment.model.Error;
 import com.revenuemonster.payment.model.Transaction;
 import com.revenuemonster.payment.util.Domain;
 import com.revenuemonster.payment.util.HttpClient;
+import com.revenuemonster.payment.view.BrowserActivity;
 import com.tencent.mm.opensdk.modelbiz.WXOpenBusinessWebview;
 import com.tencent.mm.opensdk.openapi.IWXAPI;
 import com.tencent.mm.opensdk.openapi.WXAPIFactory;
@@ -35,7 +36,7 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
     private Method method;
     private IWXAPI api;
     private static String status = "";
-    private static Application application;
+    private static Activity activity;
     private static Boolean isLoop = false;
     private static PaymentResult paymentResult;
     private static Checkout instance = null;
@@ -44,7 +45,23 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
     public void onActivityResumed(Activity activity) {
         this.isLoop = false;
         if(paymentResult != null && this.status.equalsIgnoreCase(Status.IN_PROCESS.toString())) {
-            this.paymentResult.onPaymentCancelled();
+            try {
+                QueryOrder queryOrder = new QueryOrder(checkoutCode, env);
+                Thread queryOrderThread = new Thread(queryOrder);
+                queryOrderThread.start();
+                queryOrderThread.join();
+                JSONObject queryOrderResponse = queryOrder.response();
+                status = queryOrder.getTransactionStatus();
+                if (queryOrder.isPaymentSuccess()) {
+                    paymentResult.onPaymentSuccess(new Transaction(queryOrderResponse.getJSONObject("item")));
+                } else if (queryOrder.Error() != null) {
+                    paymentResult.onPaymentFailed(queryOrder.Error());
+                } else {
+                    paymentResult.onPaymentCancelled();
+                }
+            } catch (Exception e) {
+                paymentResult.onPaymentFailed(Error.SYSTEM_BUSY);
+            }
         }
     }
 
@@ -66,16 +83,16 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
     @Override
     public void onActivityDestroyed(Activity activity) {}
 
-    public Checkout(Application application){
-        if (this.application == null) {
-            this.application = application;
+    public Checkout(Activity activity){
+        if (this.activity == null) {
+            this.activity = activity;
         }
     }
 
     public Checkout getInstance() {
         if (instance == null) {
-            instance = new Checkout(this.application);
-            this.application.registerActivityLifecycleCallbacks(this);
+            instance = new Checkout(this.activity);
+            this.activity.getApplication().registerActivityLifecycleCallbacks(this);
         }
         return this;
     }
@@ -143,6 +160,20 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
                 paymentResult.onPaymentFailed(new Error(error.getString("code"), error.getString("message")));
                 return;
             } else {
+                QueryOrder queryOrder = new QueryOrder(checkoutCode, env);
+                Thread queryOrderThread = new Thread(queryOrder);
+                queryOrderThread.start();
+                queryOrderThread.join();
+                JSONObject queryOrderResponse = queryOrder.response();
+                status = queryOrder.getTransactionStatus();
+                if (queryOrder.isPaymentSuccess()) {
+                    paymentResult.onPaymentSuccess(new Transaction(queryOrderResponse.getJSONObject("item")));
+                    return;
+                } else if (queryOrder.Error() != null) {
+                    paymentResult.onPaymentFailed(queryOrder.Error());
+                    return;
+                }
+
                 String url = response.getJSONObject("item").getString("url");
                 this.isLoop = true;
                 switch (this.method) {
@@ -155,6 +186,17 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
                             return;
                         }
                         break;
+
+                    case GRABPAY_MY:
+                    case ALIPAY_CN:
+                    case TNG_MY:
+                        this.openBrowser(url);
+                        break;
+
+                    case BOOST_MY:
+                        this.openURL(url);
+                        break;
+
                     default:
                         paymentResult.onPaymentFailed(Error.INVALID_PAYMENT_METHOD);
                         return;
@@ -188,20 +230,23 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
                 }
             });
         } catch(Exception e) {
+            e.printStackTrace();
             paymentResult.onPaymentFailed(Error.SYSTEM_BUSY);
             throw e;
         }
     }
 
-    private void boostMalaysia(String url) {
+    private void openURL(String url) {
         Intent intent = new Intent (Intent.ACTION_VIEW);
         intent.setData (Uri.parse(url));
-        this.application.startActivity(intent);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        this.activity.getApplication().startActivity(intent);
     }
 
     private void weChatPayMalaysia(String prepayID) throws Exception {
         try {
-            api = WXAPIFactory.createWXAPI(this.application, this.weChatAppID);
+            api = WXAPIFactory.createWXAPI(this.activity.getApplication(), this.weChatAppID);
 
             if (!api.isWXAppInstalled()) {
                 throw new Exception("WeChat app is not installed");
@@ -216,6 +261,15 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
         } catch(Exception e) {
             throw new Exception("System busy");
         }
+    }
+
+    public void openBrowser(String url) {
+        Intent intent = new Intent(this.activity, BrowserActivity.class);
+        Bundle b = new Bundle();
+        b.putString("url", url);
+        intent.putExtras(b);
+        intent.putExtra("result", this.paymentResult);
+        this.activity.startActivity(intent);
     }
 
 }

@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">revenuemonster</string>
+    <string name="title_activity_browser">BrowserActivity</string>
 </resources>

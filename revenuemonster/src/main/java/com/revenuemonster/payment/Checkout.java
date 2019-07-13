@@ -36,17 +36,19 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
     private Method method;
     private IWXAPI api;
     private static String status = "";
-    private static Activity activity;
+    private static Application application;
     private static Boolean isLoop = false;
+    private static Boolean isLeaveApp = false;
     private static PaymentResult paymentResult;
     private static Checkout instance = null;
-    private Boolean isLeaveApp = false;
 
     @Override
     public void onActivityResumed(Activity activity) {
         this.isLoop = false;
-        if(paymentResult != null && this.status.equalsIgnoreCase(Status.IN_PROCESS.toString())) {
+
+        if(paymentResult != null && this.status.equalsIgnoreCase(Status.IN_PROCESS.toString()) && this.isLeaveApp) {
             try {
+                this.isLeaveApp = false;
                 QueryOrder queryOrder = new QueryOrder(checkoutCode, env);
                 Thread queryOrderThread = new Thread(queryOrder);
                 queryOrderThread.start();
@@ -76,7 +78,13 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
     public void onActivityStarted(Activity activity) {}
 
     @Override
-    public void onActivityStopped(Activity activity) {}
+    public void onActivityStopped(Activity activity) {
+        if (this.isLeaveApp) {
+            this.isLeaveApp = false;
+        } else {
+            this.isLeaveApp = true;
+        }
+    }
 
     @Override
     public void onActivitySaveInstanceState(Activity activity, Bundle outState) {}
@@ -84,16 +92,16 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
     @Override
     public void onActivityDestroyed(Activity activity) {}
 
-    public Checkout(Activity activity){
-        if (this.activity == null) {
-            this.activity = activity;
+    public Checkout(Application application){
+        if (this.application == null) {
+            this.application = application;
         }
     }
 
     public Checkout getInstance() {
         if (instance == null) {
-            instance = new Checkout(this.activity);
-            this.activity.getApplication().registerActivityLifecycleCallbacks(this);
+            instance = new Checkout(this.application);
+            this.application.registerActivityLifecycleCallbacks(this);
         }
         return this;
     }
@@ -238,27 +246,26 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
 
     private void openURL(String url) {
         Intent intent = new Intent (Intent.ACTION_VIEW);
-        intent.setData (Uri.parse(url));
+        intent.setData(Uri.parse(url));
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-        this.activity.getApplication().startActivity(intent);
+        this.isLeaveApp = false;
+        this.application.startActivity(intent);
     }
 
     private void weChatPayMalaysia(String prepayID) throws Exception {
         try {
-            api = WXAPIFactory.createWXAPI(this.activity.getApplication(), this.weChatAppID);
+            api = WXAPIFactory.createWXAPI(this.application, this.weChatAppID);
 
             if (!api.isWXAppInstalled()) {
                 throw new Exception("WeChat app is not installed");
             }
-
-            this.isLeaveApp = true;
 
             WXOpenBusinessWebview.Req req = new WXOpenBusinessWebview.Req();
             req.businessType = 7;
             HashMap<String, String> queryInfo = new HashMap<>();
             queryInfo.put("prepay_id",prepayID);
             req.queryInfo = queryInfo;
+            this.isLeaveApp = false;
             api.sendReq(req);
         } catch(Exception e) {
             throw new Exception("System busy");
@@ -266,12 +273,15 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
     }
 
     public void openBrowser(String url) {
-        Intent intent = new Intent(this.activity, BrowserActivity.class);
+        Intent intent = new Intent(this.application, BrowserActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
         Bundle b = new Bundle();
         b.putString("url", url);
         intent.putExtras(b);
         intent.putExtra("result", this.paymentResult);
-        this.activity.startActivity(intent);
+        this.isLeaveApp = false;
+        this.application.startActivity(intent);
     }
 
 }

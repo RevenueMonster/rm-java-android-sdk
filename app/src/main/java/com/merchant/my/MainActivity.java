@@ -32,7 +32,7 @@ public class MainActivity extends Activity implements PaymentResult {
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                     builder.setTitle("Payment Method")
                             .setItems(new String[]{"WeChatPay MY", "TNG", "Boost", "AliPay CN", "GrabPay"}, new DialogInterface.OnClickListener() {
-                                String checkoutId = "1563049414899337476";
+                                String checkoutId = "1563058628703907802";
                                 String weChatAppID = "";
                                 Method method;
                                 public void onClick(DialogInterface dialog, int which) {
@@ -54,7 +54,7 @@ public class MainActivity extends Activity implements PaymentResult {
                                             break;
                                     }
                                     try {
-                                        new Checkout(MainActivity.this).getInstance().setWeChatAppID(weChatAppID).
+                                        new Checkout(getApplication()).getInstance().setWeChatAppID(weChatAppID).
                                                 setEnv(Env.SANDBOX).
                                                 pay(method, checkoutId, MainActivity.this);
                                     } catch(Exception e) {

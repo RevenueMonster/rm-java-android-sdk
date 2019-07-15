@@ -13,7 +13,7 @@
         <activity
             android:name=".view.BrowserActivity"
             android:label="@string/title_activity_browser"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
     </application>
 
 </manifest>

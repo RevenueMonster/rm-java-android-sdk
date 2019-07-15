@@ -28,13 +28,15 @@
 
             <ImageView
                 android:id="@+id/close_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:background="@null"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
-                android:layout_margin="10sp"
+                android:layout_gravity="end"
+                android:layout_margin="15sp"
+                android:background="@null"
+                android:scaleType="fitXY"
+                android:tint="@color/white"
                 app:srcCompat="@android:drawable/ic_menu_close_clear_cancel" />
 
             <!--<ImageView-->

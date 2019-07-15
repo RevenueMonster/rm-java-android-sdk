@@ -50,7 +50,6 @@ public class BrowserActivity extends AppCompatActivity {
         String url = b.getString("url");
 
         ImageView closeButton = (ImageView) findViewById(R.id.close_button);
-        closeButton.setColorFilter(Color.WHITE);
         closeButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 finish();

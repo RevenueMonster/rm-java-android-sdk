@@ -24,9 +24,6 @@ public class BrowserActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_browser);
 
-        Intent intent = getIntent();
-        final PaymentResult result = (PaymentResult) intent.getSerializableExtra("result");
-
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_top);
         toolbar.setTitle("RM Checkout");
 
@@ -40,7 +37,6 @@ public class BrowserActivity extends AppCompatActivity {
             if (webView.canGoBack()) {
                 webView.goBack();
             } else {
-//                result.onPaymentCancelled();
                 finish();
             }
             }

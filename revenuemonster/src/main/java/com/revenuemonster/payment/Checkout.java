@@ -279,7 +279,6 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
         Bundle b = new Bundle();
         b.putString("url", url);
         intent.putExtras(b);
-        intent.putExtra("result", this.paymentResult);
         this.isLeaveApp = false;
         this.application.startActivity(intent);
     }

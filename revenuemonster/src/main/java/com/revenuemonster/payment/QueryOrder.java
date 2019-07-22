@@ -27,6 +27,7 @@ public class QueryOrder implements Runnable {
         try {
             JSONObject request = new JSONObject();
             request.put("code", this.checkoutCode);
+            request.put("clearCache", true);
             HttpClient client = new HttpClient();
             Log.d("RM_QUERY_REQUEST", request.toString());
             this.response = client.request(new Domain(this.env).getPaymentGatewayURL()+"/v1/online/transaction/status", "POST", request.toString());

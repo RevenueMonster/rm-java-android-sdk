@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -23,7 +22,6 @@ import com.tencent.mm.opensdk.openapi.WXAPIFactory;
 import org.json.JSONObject;
 
 import java.util.HashMap;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by yussuf on 4/24/19.
@@ -31,10 +29,10 @@ import java.util.concurrent.TimeUnit;
 
 public class Checkout implements Application.ActivityLifecycleCallbacks {
     private Env env;
-    private String checkoutCode;
     private String weChatAppID;
     private Method method;
     private IWXAPI api;
+    private static String checkOutID = "";
     private static String status = "";
     private static Application application;
     private static Boolean isLoop = false;
@@ -45,11 +43,10 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
     @Override
     public void onActivityResumed(Activity activity) {
         this.isLoop = false;
-
         if(paymentResult != null && this.status.equalsIgnoreCase(Status.IN_PROCESS.toString()) && this.isLeaveApp) {
             try {
                 this.isLeaveApp = false;
-                QueryOrder queryOrder = new QueryOrder(checkoutCode, env);
+                QueryOrder queryOrder = new QueryOrder(this.checkOutID, env);
                 Thread queryOrderThread = new Thread(queryOrder);
                 queryOrderThread.start();
                 queryOrderThread.join();
@@ -118,12 +115,12 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
 
     private class checkout implements Runnable {
         Env env;
-        String checkoutCode;
+        String code;
         Method method;
         JSONObject response;
 
-        private checkout(Method method, String checkoutCode, Env env)  {
-            this.checkoutCode = checkoutCode;
+        private checkout(Method method, String code, Env env)  {
+            this.code = code;
             this.method = method;
             this.env = env;
         }
@@ -132,7 +129,7 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
             try {
                 JSONObject request = new JSONObject();
                 request.put("method", method);
-                request.put("code", this.checkoutCode);
+                request.put("code", this.code);
                 HttpClient client = new HttpClient();
 
                 Log.d("RM_CHECKOUT_REQUEST", request.toString());
@@ -148,13 +145,13 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
         }
     }
 
-    public void pay(final Method method, String checkoutId, final PaymentResult result) throws Exception {
+    public void pay(final Method method, String code, final PaymentResult result) throws Exception {
         this.method = method;
-        this.checkoutCode = checkoutId;
+        this.checkOutID = code;
         this.paymentResult = result;
 
         try {
-            checkout c = new checkout(this.method, this.checkoutCode, this.env);
+            checkout c = new checkout(this.method, this.checkOutID, this.env);
             Thread thread = new Thread(c);
             thread.start();
             thread.join();
@@ -168,7 +165,7 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
                 paymentResult.onPaymentFailed(new Error(error.getString("code"), error.getString("message")));
                 return;
             } else {
-                QueryOrder queryOrder = new QueryOrder(checkoutCode, env);
+                QueryOrder queryOrder = new QueryOrder(this.checkOutID, env);
                 Thread queryOrderThread = new Thread(queryOrder);
                 queryOrderThread.start();
                 queryOrderThread.join();
@@ -210,33 +207,6 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
                         return;
                 }
             }
-
-            AsyncTask.execute(new Runnable() {
-                @Override
-                public void run() {
-                    do {
-                        try {
-                            TimeUnit.SECONDS.sleep(2);
-                            QueryOrder queryOrder = new QueryOrder(checkoutCode, env);
-                            Thread queryOrderThread = new Thread(queryOrder);
-                            queryOrderThread.start();
-                            queryOrderThread.join();
-                            JSONObject queryOrderResponse = queryOrder.response();
-                            status = queryOrder.getTransactionStatus();
-                            if (queryOrder.isPaymentSuccess()) {
-                                isLoop = false;
-                                paymentResult.onPaymentSuccess(new Transaction(queryOrderResponse.getJSONObject("item")));
-                            } else if (queryOrder.Error() != null) {
-                                isLoop = false;
-                                paymentResult.onPaymentFailed(queryOrder.Error());
-                            }
-                        } catch(Exception e) {
-                            isLoop = false;
-                            paymentResult.onPaymentFailed(Error.SYSTEM_BUSY);
-                        }
-                    } while(isLoop);
-                }
-            });
         } catch(Exception e) {
             e.printStackTrace();
             paymentResult.onPaymentFailed(Error.SYSTEM_BUSY);
@@ -255,7 +225,6 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
     private void weChatPayMalaysia(String prepayID) throws Exception {
         try {
             api = WXAPIFactory.createWXAPI(this.application, this.weChatAppID);
-
             if (!api.isWXAppInstalled()) {
                 throw new Exception("WeChat app is not installed");
             }
@@ -268,6 +237,7 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
             this.isLeaveApp = false;
             api.sendReq(req);
         } catch(Exception e) {
+            e.printStackTrace();
             throw new Exception("System busy");
         }
     }

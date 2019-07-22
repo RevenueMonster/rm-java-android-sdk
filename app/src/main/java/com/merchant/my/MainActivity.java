@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.revenuemonster.payment.Checkout;
 import com.revenuemonster.payment.PaymentResult;
@@ -15,14 +16,22 @@ import com.revenuemonster.payment.constant.Env;
 import com.revenuemonster.payment.constant.Method;
 import com.revenuemonster.payment.model.Error;
 import com.revenuemonster.payment.model.Transaction;
+import com.revenuemonster.payment.util.HttpClient;
+
+import org.json.JSONObject;
 
 public class MainActivity extends Activity implements PaymentResult {
+    JSONObject response;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setContentView(R.layout.activity_main);
         super.onCreate(savedInstanceState);
         Intent intent = getIntent();
         Button button = (Button) findViewById(R.id.rmPay);
+
+
+
 
         button.setOnClickListener(new View.OnClickListener()
         {
@@ -32,7 +41,8 @@ public class MainActivity extends Activity implements PaymentResult {
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                     builder.setTitle("Payment Method")
                             .setItems(new String[]{"WeChatPay MY", "TNG", "Boost", "AliPay CN", "GrabPay"}, new DialogInterface.OnClickListener() {
-                                String checkoutId = "1563058628703907802";
+                                String checkoutID = getCheckoutID();
+
                                 String weChatAppID = "";
                                 Method method;
                                 public void onClick(DialogInterface dialog, int which) {
@@ -56,7 +66,7 @@ public class MainActivity extends Activity implements PaymentResult {
                                     try {
                                         new Checkout(getApplication()).getInstance().setWeChatAppID(weChatAppID).
                                                 setEnv(Env.SANDBOX).
-                                                pay(method, checkoutId, MainActivity.this);
+                                                pay(method, checkoutID, MainActivity.this);
                                     } catch(Exception e) {
                                         e.printStackTrace();
                                     }
@@ -70,19 +80,84 @@ public class MainActivity extends Activity implements PaymentResult {
         });
     }
 
+    private String getCheckoutID() {
+        String checkoutID = "";
+        try {
+            checkout c = new checkout();
+            Thread thread = new Thread(c);
+            thread.start();
+            thread.join();
+            checkoutID = c.getCheckOutID();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return checkoutID;
+    }
+
+    private class checkout implements Runnable {
+        Env env;
+        String checkoutCode;
+        Method method;
+        JSONObject response;
+
+        private checkout()  {
+            this.checkoutCode = checkoutCode;
+            this.method = method;
+            this.env = env;
+        }
+
+        public void run()  {
+            try {
+                JSONObject request = new JSONObject();
+                request.put("type", "MOBILE_PAYMENT");
+                request.put("redirectURL", "revenuemonster://test");
+                request.put("notifyURL", "https://dev-rm-api.ap.ngrok.io");
+
+                HttpClient client = new HttpClient();
+                Log.d("RM_CHECKOUT_REQUEST", request.toString());
+                this.response = client.request("https://sb-api.revenuemonster.my/demo/payment/online", "POST", request.toString());
+                Log.d("RM_CHECKOUT_RESPONSE", response.toString());
+            } catch (Exception e) {
+                Log.e("RM_CHECKOUT_ERROR", e.toString());
+            }
+        }
+
+        public JSONObject response() {
+            return this.response;
+        }
+
+        public String getCheckOutID() throws Exception {
+            try {
+                if (!this.response.isNull("item")) {
+                    String checkoutId =  this.response.getJSONObject("item").get("checkoutId").toString();
+                    return checkoutId;
+                }
+            } catch(Exception e) {
+                Log.e("RM_PAYMENT_FLAG_ERROR", e.toString());
+                throw e;
+            }
+
+            return "";
+        }
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
     }
 
     public void onPaymentSuccess(Transaction transaction) {
-        Log.d("SUCCESS", transaction.getStatus());
+        Log.d("ONSUCCESS", "onPaymentSuccess: ");
+        Toast toast=Toast.makeText(getApplicationContext(),"Payment Success",Toast.LENGTH_SHORT);
+        toast.show();
     }
     public void onPaymentFailed(Error error) {
         Log.d("FAILED", error.getMessage());
     }
     public void onPaymentCancelled() {
-        Log.d("CANCELLED", "cancelled");
+        Toast toast=Toast.makeText(getApplicationContext(),"Payment Cancelled",Toast.LENGTH_SHORT);
+        toast.show();
     }
 }
 

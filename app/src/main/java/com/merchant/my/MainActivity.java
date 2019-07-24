@@ -43,7 +43,7 @@ public class MainActivity extends Activity implements PaymentResult {
                             .setItems(new String[]{"WeChatPay MY", "TNG", "Boost", "AliPay CN", "GrabPay"}, new DialogInterface.OnClickListener() {
                                 String checkoutID = getCheckoutID();
 
-                                String weChatAppID = "wx62173edb65003c7c";
+                                String weChatAppID = "";
                                 Method method;
                                 public void onClick(DialogInterface dialog, int which) {
                                     switch (which) {

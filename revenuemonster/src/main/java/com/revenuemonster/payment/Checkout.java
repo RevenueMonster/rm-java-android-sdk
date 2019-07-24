@@ -227,6 +227,11 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
     }
 
     private void openURL(String url) {
+        if (!this.isAppInstalled || url.contains("https://")) {
+            this.openBrowser(url);
+            return;
+        }
+
         Intent intent = new Intent (Intent.ACTION_VIEW);
         intent.setData(Uri.parse(url));
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

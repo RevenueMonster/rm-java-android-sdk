@@ -30,9 +30,6 @@ public class MainActivity extends Activity implements PaymentResult {
         Intent intent = getIntent();
         Button button = (Button) findViewById(R.id.rmPay);
 
-
-
-
         button.setOnClickListener(new View.OnClickListener()
         {
             public void onClick(View v)
@@ -65,7 +62,7 @@ public class MainActivity extends Activity implements PaymentResult {
                                     }
                                     try {
                                         new Checkout(MainActivity.this).getInstance().setWeChatAppID(weChatAppID).
-                                                setEnv(Env.SANDBOX).
+                                                setEnv(Env.DEVELOPMENT).
                                                 pay(method, checkoutID, MainActivity.this);
                                     } catch(Exception e) {
                                         e.printStackTrace();

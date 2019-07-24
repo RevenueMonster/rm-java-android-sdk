@@ -11,6 +11,8 @@ import org.json.JSONObject;
 public class Error {
     public static final Error SYSTEM_BUSY = new Error(Status.FAILED.toString(), "System busy");
     public static final Error INVALID_PAYMENT_METHOD = new Error(Status.FAILED.toString(), "Invalid payment method");
+    public static final Error WECHAT_APP_IS_REQUIRED = new Error(Status.FAILED.toString(), "Wechat app id parameter is required");
+    public static final Error WECHAT_APP_NOT_INSTALLED = new Error(Status.FAILED.toString(), "User not installed wechat app");
 
 
     private String code;

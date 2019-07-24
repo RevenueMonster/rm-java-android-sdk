@@ -43,7 +43,7 @@ public class MainActivity extends Activity implements PaymentResult {
                             .setItems(new String[]{"WeChatPay MY", "TNG", "Boost", "AliPay CN", "GrabPay"}, new DialogInterface.OnClickListener() {
                                 String checkoutID = getCheckoutID();
 
-                                String weChatAppID = "";
+                                String weChatAppID = "wx62173edb65003c7c";
                                 Method method;
                                 public void onClick(DialogInterface dialog, int which) {
                                     switch (which) {
@@ -64,7 +64,7 @@ public class MainActivity extends Activity implements PaymentResult {
                                             break;
                                     }
                                     try {
-                                        new Checkout(getApplication()).getInstance().setWeChatAppID(weChatAppID).
+                                        new Checkout(MainActivity.this).getInstance().setWeChatAppID(weChatAppID).
                                                 setEnv(Env.SANDBOX).
                                                 pay(method, checkoutID, MainActivity.this);
                                     } catch(Exception e) {
@@ -96,16 +96,7 @@ public class MainActivity extends Activity implements PaymentResult {
     }
 
     private class checkout implements Runnable {
-        Env env;
-        String checkoutCode;
-        Method method;
         JSONObject response;
-
-        private checkout()  {
-            this.checkoutCode = checkoutCode;
-            this.method = method;
-            this.env = env;
-        }
 
         public void run()  {
             try {
@@ -121,10 +112,6 @@ public class MainActivity extends Activity implements PaymentResult {
             } catch (Exception e) {
                 Log.e("RM_CHECKOUT_ERROR", e.toString());
             }
-        }
-
-        public JSONObject response() {
-            return this.response;
         }
 
         public String getCheckOutID() throws Exception {
@@ -148,14 +135,18 @@ public class MainActivity extends Activity implements PaymentResult {
     }
 
     public void onPaymentSuccess(Transaction transaction) {
-        Log.d("ONSUCCESS", "onPaymentSuccess: ");
+        Log.d("SUCCESS", "onPaymentSuccess");
         Toast toast=Toast.makeText(getApplicationContext(),"Payment Success",Toast.LENGTH_SHORT);
         toast.show();
     }
     public void onPaymentFailed(Error error) {
         Log.d("FAILED", error.getMessage());
+        Toast toast=Toast.makeText(getApplicationContext(),"Payment Failed",Toast.LENGTH_SHORT);
+        toast.show();
     }
     public void onPaymentCancelled() {
+        Log.d("CANCELLED", "onPaymentCancelled");
+
         Toast toast=Toast.makeText(getApplicationContext(),"Payment Cancelled",Toast.LENGTH_SHORT);
         toast.show();
     }

@@ -5,10 +5,13 @@ import android.app.Application;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 
+import com.alipay.sdk.app.EnvUtils;
 import com.revenuemonster.payment.constant.Env;
 import com.revenuemonster.payment.constant.Method;
+import com.revenuemonster.payment.constant.PackageName;
 import com.revenuemonster.payment.constant.Status;
 import com.revenuemonster.payment.model.Error;
 import com.revenuemonster.payment.model.Transaction;
@@ -18,10 +21,13 @@ import com.revenuemonster.payment.view.BrowserActivity;
 import com.tencent.mm.opensdk.modelbiz.WXOpenBusinessWebview;
 import com.tencent.mm.opensdk.openapi.IWXAPI;
 import com.tencent.mm.opensdk.openapi.WXAPIFactory;
+import com.alipay.sdk.app.PayTask;
 
 import org.json.JSONObject;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by yussuf on 4/24/19.
@@ -32,17 +38,17 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
     private String weChatAppID;
     private Method method;
     private IWXAPI api;
+    private static Boolean isAppInstalled = false;
     private static String checkOutID = "";
     private static String status = "";
     private static Application application;
-    private static Boolean isLoop = false;
+    private static Activity activity;
     private static Boolean isLeaveApp = false;
     private static PaymentResult paymentResult;
     private static Checkout instance = null;
 
     @Override
     public void onActivityResumed(Activity activity) {
-        this.isLoop = false;
         if(paymentResult != null && this.status.equalsIgnoreCase(Status.IN_PROCESS.toString()) && this.isLeaveApp) {
             try {
                 this.isLeaveApp = false;
@@ -62,6 +68,8 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
             } catch (Exception e) {
                 paymentResult.onPaymentFailed(Error.SYSTEM_BUSY);
             }
+        } else {
+            this.isLeaveApp = true;
         }
     }
 
@@ -75,13 +83,7 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
     public void onActivityStarted(Activity activity) {}
 
     @Override
-    public void onActivityStopped(Activity activity) {
-        if (this.isLeaveApp) {
-            this.isLeaveApp = false;
-        } else {
-            this.isLeaveApp = true;
-        }
-    }
+    public void onActivityStopped(Activity activity) {}
 
     @Override
     public void onActivitySaveInstanceState(Activity activity, Bundle outState) {}
@@ -89,15 +91,16 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
     @Override
     public void onActivityDestroyed(Activity activity) {}
 
-    public Checkout(Application application){
+    public Checkout(Activity activity){
         if (this.application == null) {
-            this.application = application;
+            this.activity = activity;
+            this.application = activity.getApplication();
         }
     }
 
     public Checkout getInstance() {
         if (instance == null) {
-            instance = new Checkout(this.application);
+            instance = new Checkout(this.activity);
             this.application.registerActivityLifecycleCallbacks(this);
         }
         return this;
@@ -130,6 +133,7 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
                 JSONObject request = new JSONObject();
                 request.put("method", method);
                 request.put("code", this.code);
+                request.put("isAppInstalled",  isAppInstalled);
                 HttpClient client = new HttpClient();
 
                 Log.d("RM_CHECKOUT_REQUEST", request.toString());
@@ -149,6 +153,7 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
         this.method = method;
         this.checkOutID = code;
         this.paymentResult = result;
+        this.isAppInstalled = new PackageName(this.activity, this.env).isInstalled(method);
 
         try {
             checkout c = new checkout(this.method, this.checkOutID, this.env);
@@ -180,7 +185,6 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
                 }
 
                 String url = response.getJSONObject("item").getString("url");
-                this.isLoop = true;
                 switch (this.method) {
                     case WECHATPAY_MY:
                         try {
@@ -192,8 +196,17 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
                         }
                         break;
 
-                    case GRABPAY_MY:
                     case ALIPAY_CN:
+                        try {
+                            String prepayID = url;
+                            this.alipayChina(prepayID);
+                        } catch(Exception e) {
+                            paymentResult.onPaymentFailed(new Error(Status.FAILED.toString(), e.getMessage()));
+                            return;
+                        }
+                        break;
+
+                    case GRABPAY_MY:
                     case TNG_MY:
                         this.openBrowser(url);
                         break;
@@ -208,7 +221,6 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
                 }
             }
         } catch(Exception e) {
-            e.printStackTrace();
             paymentResult.onPaymentFailed(Error.SYSTEM_BUSY);
             throw e;
         }
@@ -218,27 +230,76 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
         Intent intent = new Intent (Intent.ACTION_VIEW);
         intent.setData(Uri.parse(url));
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        this.isLeaveApp = false;
+        this.isLeaveApp = true;
         this.application.startActivity(intent);
     }
 
     private void weChatPayMalaysia(String prepayID) throws Exception {
         try {
-            api = WXAPIFactory.createWXAPI(this.application, this.weChatAppID);
-            if (!api.isWXAppInstalled()) {
-                throw new Exception("WeChat app is not installed");
+            if (this.weChatAppID == "") {
+                paymentResult.onPaymentFailed(Error.WECHAT_APP_IS_REQUIRED);
+                return;
             }
 
-            WXOpenBusinessWebview.Req req = new WXOpenBusinessWebview.Req();
-            req.businessType = 7;
-            HashMap<String, String> queryInfo = new HashMap<>();
-            queryInfo.put("prepay_id",prepayID);
-            req.queryInfo = queryInfo;
-            this.isLeaveApp = false;
-            api.sendReq(req);
+            api = WXAPIFactory.createWXAPI(this.application, this.weChatAppID);
+            if (!api.isWXAppInstalled()) {
+                paymentResult.onPaymentFailed(Error.WECHAT_APP_NOT_INSTALLED);
+                return;
+            }
+            this.isLeaveApp = true;
+
+            final String orderData = prepayID;
+
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        WXOpenBusinessWebview.Req req = new WXOpenBusinessWebview.Req();
+                        req.businessType = 7;
+                        HashMap<String, String> queryInfo = new HashMap<>();
+                        queryInfo.put("prepay_id", orderData);
+                        req.queryInfo = queryInfo;
+                        api.sendReq(req);
+                    } catch(Exception e) {
+                        throw e;
+                    }
+                }
+            }).start();
         } catch(Exception e) {
             e.printStackTrace();
             throw new Exception("System busy");
+        }
+    }
+
+    private void alipayChina(String prepayID) throws Exception {
+        try {
+            if (!this.isAppInstalled || prepayID.contains("https://")) {
+                this.openBrowser(prepayID);
+                return;
+            }
+
+            if (!this.env.equals(Env.PRODUCTION)) {
+                EnvUtils.setEnv(EnvUtils.EnvEnum.SANDBOX);
+            }
+
+            byte[] data = Base64.decode(prepayID, Base64.DEFAULT);
+            this.isLeaveApp = false;
+
+            final String orderData = new String(data);
+
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        PayTask alipay = new PayTask(activity);
+                        alipay.payV2(orderData,false);
+                    } catch(Exception e) {
+                        throw e;
+                    }
+                }
+            }).start();
+        } catch(Exception e) {
+            throw e;
         }
     }
 
@@ -252,5 +313,4 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
         this.isLeaveApp = false;
         this.application.startActivity(intent);
     }
-
 }

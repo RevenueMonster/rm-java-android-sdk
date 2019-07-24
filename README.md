@@ -26,7 +26,7 @@ dependencies {
 ### Checkout Sample Code
 ```java
 try {
-	new Checkout(getApplication()).getInstance().
+	new Checkout(MainActivity.this).getInstance().
 	setWeChatAppID("<< WeChat Open Platform AppID >>").setEnv(Env.SANDBOX).
 	pay(Method.WECHATPAY_MY, "<<Get Checkout Id from API>>", new Result());
 } catch(Exception e) {

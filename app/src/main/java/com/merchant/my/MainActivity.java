@@ -104,7 +104,7 @@ public class MainActivity extends Activity implements PaymentResult {
 
                 HttpClient client = new HttpClient();
                 Log.d("RM_CHECKOUT_REQUEST", request.toString());
-                this.response = client.request("https://sb-api.revenuemonster.my/demo/payment/online", "POST", request.toString());
+                this.response = client.request("https://dev-rm-open.ap.ngrok.io/demo/payment/online", "POST", request.toString());
                 Log.d("RM_CHECKOUT_RESPONSE", response.toString());
             } catch (Exception e) {
                 Log.e("RM_CHECKOUT_ERROR", e.toString());

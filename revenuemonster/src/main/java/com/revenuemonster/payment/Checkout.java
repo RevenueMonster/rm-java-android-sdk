@@ -278,26 +278,29 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
 
     private void alipayChina(String prepayID) throws Exception {
         try {
-            if (!this.isAppInstalled || prepayID.contains("https://")) {
-                this.openBrowser(prepayID);
-                return;
-            }
+//            if (!this.isAppInstalled || prepayID.contains("https://")) {
+//                this.openBrowser(prepayID);
+//                return;
+//            }
 
             if (!this.env.equals(Env.PRODUCTION)) {
                 EnvUtils.setEnv(EnvUtils.EnvEnum.SANDBOX);
             }
 
-            byte[] data = Base64.decode(prepayID, Base64.DEFAULT);
+            byte[] data = Base64.decode(prepayID, Base64.URL_SAFE);
             this.isLeaveApp = false;
 
             final String orderData = new String(data);
+            Log.d("REQUEST_DATA", orderData);
 
             new Thread(new Runnable() {
                 @Override
                 public void run() {
                     try {
                         PayTask alipay = new PayTask(activity);
-                        alipay.payV2(orderData,false);
+                        Map<String, String> result = alipay.payV2(orderData,true);
+                        Log.d("RESULT", result.toString());
+
                     } catch(Exception e) {
                         throw e;
                     }

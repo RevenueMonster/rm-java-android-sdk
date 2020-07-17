@@ -62,7 +62,7 @@ public class MainActivity extends Activity implements PaymentResult {
                                     }
                                     try {
                                         new Checkout(MainActivity.this).getInstance().setWeChatAppID(weChatAppID).
-                                                setEnv(Env.DEVELOPMENT).
+                                                setEnv(Env.SANDBOX).
                                                 pay(method, checkoutID, MainActivity.this);
                                     } catch(Exception e) {
                                         e.printStackTrace();

@@ -52,7 +52,7 @@ public class BrowserActivity extends AppCompatActivity {
 
         webView = (WebView) findViewById(R.id.web_view);
         loadWebViewLoad(webView, url);
-
+        webView.getSettings().setDomStorageEnabled(true);
         webView.setWebChromeClient(new WebChromeClient()
         {
             @Override public void onProgressChanged(WebView view, int newProgress) {

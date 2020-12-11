@@ -50,11 +50,11 @@ static public class Result implements PaymentResult {
 	}
 }
 ```
-
 ### Environment
 - SANDBOX      
 - PRODUCTION
-
+<br/>
+<br/>
 ### Method
 - WECHATPAY_MY
 - TNG_MY

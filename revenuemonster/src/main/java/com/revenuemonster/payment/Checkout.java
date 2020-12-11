@@ -36,7 +36,9 @@ import java.util.Map;
 public class Checkout implements Application.ActivityLifecycleCallbacks {
     private Env env;
     private String weChatAppID;
+    private HashMap<String, Object> card;
     private Method method;
+    private String bankCode;
     private IWXAPI api;
     private static Boolean isAppInstalled = false;
     private static String checkOutID = "";
@@ -66,6 +68,7 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
                     paymentResult.onPaymentCancelled();
                 }
             } catch (Exception e) {
+                e.printStackTrace();
                 paymentResult.onPaymentFailed(Error.SYSTEM_BUSY);
             }
         } else {
@@ -106,8 +109,33 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
         return this;
     }
 
+    public Checkout setToken(String token, String cvcNo) {
+        this.card = new HashMap<String, Object>();
+        this.card.put("isToken", true);
+        this.card.put("no", token);
+        this.card.put("cvc", cvcNo);
+        return this;
+    }
+
+    public Checkout setBankCode(String bankCode) {
+        this.bankCode = bankCode;
+        return this;
+    }
+
     public Checkout setWeChatAppID(String appID) {
         this.weChatAppID = appID;
+        return this;
+    }
+
+    public Checkout setCardInfo(String cardHolderName, String cardNo, String cvcNo, int expMonth, int expYear, String countryCode, Boolean isSave) {
+        this.card = new HashMap<String, Object>();
+        this.card.put("name", cardHolderName);
+        this.card.put("no", cardNo);
+        this.card.put("month", expMonth);
+        this.card.put("year", expYear);
+        this.card.put("cvc", cvcNo);
+        this.card.put("countryCode", countryCode);
+        this.card.put("isSave", isSave);
         return this;
     }
 
@@ -120,20 +148,28 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
         Env env;
         String code;
         Method method;
+        String bankCode;
         JSONObject response;
+        HashMap<String, Object> card;
 
-        private checkout(Method method, String code, Env env)  {
+        private checkout(Method method, String code, Env env, HashMap<String, Object> card, String bankCode)  {
             this.code = code;
             this.method = method;
             this.env = env;
+            this.card = card;
+            this.bankCode = bankCode;
         }
 
         public void run()  {
             try {
                 JSONObject request = new JSONObject();
                 request.put("method", method);
-                request.put("code", this.code);
+                request.put("code", code);
                 request.put("isAppInstalled",  isAppInstalled);
+                request.put("bankCode", bankCode);
+                if (card != null) {
+                    request.put("card", new JSONObject(card));
+                }
                 HttpClient client = new HttpClient();
 
                 Log.d("RM_CHECKOUT_REQUEST", request.toString());
@@ -156,7 +192,7 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
         this.isAppInstalled = new PackageName(this.activity, this.env).isInstalled(method);
 
         try {
-            checkout c = new checkout(this.method, this.checkOutID, this.env);
+            checkout c = new checkout(this.method, this.checkOutID, this.env, this.card, this.bankCode);
             Thread thread = new Thread(c);
             thread.start();
             thread.join();
@@ -208,6 +244,11 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
 
                     case GRABPAY_MY:
                     case TNG_MY:
+                    case MCASH_MY:
+                    case RAZERPAY_MY:
+                    case PRESTO_MY:
+                    case GOBIZ_MY:
+                    case FPX_MY:
                         this.openBrowser(url);
                         break;
 
@@ -221,6 +262,7 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
                 }
             }
         } catch(Exception e) {
+            e.printStackTrace();
             paymentResult.onPaymentFailed(Error.SYSTEM_BUSY);
             throw e;
         }

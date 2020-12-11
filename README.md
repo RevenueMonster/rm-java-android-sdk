@@ -27,7 +27,11 @@ dependencies {
 ```java
 try {
 	new Checkout(MainActivity.this).getInstance().
-	setWeChatAppID("<< WeChat Open Platform AppID >>").setEnv(Env.SANDBOX).
+	setWeChatAppID("<< WeChat Open Platform AppID >>"). // only use for wechatpay
+	setEnv(Env.SANDBOX).
+	setCardInfo("<<Card Holder Name>>","<<Card No>>","<<Cvc No>>","<<Exp Month>>","<<Exp Year>>","<<Country Code>>","<<Card Save>>"). // only use for new card 
+	setToken("<<Token>>","<<Cvc No>>"). // only use if use existing card token
+	setBankCode("<<Set Bank Code>>"). // only use for fpx, get the bank code from api
 	pay(Method.WECHATPAY_MY, "<<Get Checkout Id from API>>", new Result());
 } catch(Exception e) {
 	e.printStackTrace();
@@ -46,3 +50,19 @@ static public class Result implements PaymentResult {
 	}
 }
 ```
+
+### Environment
+- SANDBOX      
+- PRODUCTION
+
+### Method
+- WECHATPAY_MY
+- TNG_MY
+- BOOST_MY
+- ALIPAY_CN
+- GRABPAY_MY
+- MCASH_MY
+- RAZERPAY_MY
+- PRESTO_MY
+- GOBIZ_MY
+- FPX_MY

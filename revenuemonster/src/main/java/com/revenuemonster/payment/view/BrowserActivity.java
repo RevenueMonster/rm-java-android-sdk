@@ -58,7 +58,8 @@ public class BrowserActivity extends AppCompatActivity {
             @Override public void onProgressChanged(WebView view, int newProgress) {
                 if (newProgress == 100) {
                     try {
-                        if (view.getUrl().contains("/v1/transaction/web/close")) {
+                        String url = view.getUrl();
+                        if (url.contains("/v1/transaction/web/close")) {
                             finish();
                         }
                     } catch(Exception e) {

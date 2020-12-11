@@ -9,5 +9,10 @@ public enum Method {
     TNG_MY,
     BOOST_MY,
     ALIPAY_CN,
-    GRABPAY_MY
+    GRABPAY_MY,
+    MCASH_MY,
+    RAZERPAY_MY,
+    PRESTO_MY,
+    GOBIZ_MY,
+    FPX_MY,
 }

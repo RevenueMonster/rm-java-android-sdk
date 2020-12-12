@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Merchant Application</string>
     <string name="title_activity_main">MainActivity</string>
+    <string name="spinner_title">MainActivity</string>
 </resources>

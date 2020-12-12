@@ -127,9 +127,9 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
         return this;
     }
 
-    public Checkout setCardInfo(String cardHolderName, String cardNo, String cvcNo, int expMonth, int expYear, String countryCode, Boolean isSave) {
+    public Checkout setCardInfo(String name, String cardNo, String cvcNo, int expMonth, int expYear, String countryCode, Boolean isSave) {
         this.card = new HashMap<String, Object>();
-        this.card.put("name", cardHolderName);
+        this.card.put("name", name);
         this.card.put("no", cardNo);
         this.card.put("month", expMonth);
         this.card.put("year", expYear);

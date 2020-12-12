@@ -30,7 +30,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends Activity implements PaymentResult, AdapterView.OnItemSelectedListener {
+public class MainActivity extends Activity implements PaymentResult {
     JSONObject response;
     int paymentMethod;
     int cardSelected;
@@ -39,7 +39,14 @@ public class MainActivity extends Activity implements PaymentResult, AdapterView
     protected void onCreate(Bundle savedInstanceState) {
         setContentView(R.layout.activity_main);
         super.onCreate(savedInstanceState);
-        Intent intent = getIntent();
+
+        final EditText cardName = (EditText) findViewById(R.id.card_name);
+        final EditText cardNo = (EditText) findViewById(R.id.card_no);
+        final EditText cvc = (EditText) findViewById(R.id.cvc);
+        final EditText expDate = (EditText) findViewById(R.id.exp_date);
+        final CheckBox saveCard = (CheckBox) findViewById(R.id.save_card);
+        final Spinner selectCard = (Spinner) findViewById(R.id.card_selection);
+
         Button button = (Button) findViewById(R.id.pay_now);
         button.setOnClickListener(new View.OnClickListener()
         {
@@ -47,7 +54,6 @@ public class MainActivity extends Activity implements PaymentResult, AdapterView
             {
                 try {
                     Checkout c = new Checkout(MainActivity.this).getInstance().setEnv(Env.SANDBOX);
-
                     String checkoutID = getCheckoutID();
                     String weChatAppID = "";
                     Method method;
@@ -78,13 +84,6 @@ public class MainActivity extends Activity implements PaymentResult, AdapterView
                                 method = Method.PRESTO_MY;
                                 break;
                             case 9:
-                                EditText cardName = (EditText) findViewById(R.id.card_name);
-                                EditText cardNo = (EditText) findViewById(R.id.card_no);
-                                EditText cvc = (EditText) findViewById(R.id.cvc);
-                                EditText expDate = (EditText) findViewById(R.id.exp_date);
-                                CheckBox saveCard = (CheckBox) findViewById(R.id.save_card);
-                                Spinner selectCard = (Spinner) findViewById(R.id.card_selection);
-
                                 if (selectCard.getSelectedItemPosition() == 0) {
                                     if (expDate.getText().toString().length() == 5) {
                                         int expMonth = Integer.parseInt(expDate.getText().toString().substring(0, 2));
@@ -113,8 +112,41 @@ public class MainActivity extends Activity implements PaymentResult, AdapterView
         });
 
 
-        Spinner spinner = (Spinner) findViewById(R.id.method);
-        spinner.setOnItemSelectedListener(this);
+        Spinner methodSpinner = (Spinner) findViewById(R.id.method);
+        methodSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                paymentMethod = position;
+
+                if (paymentMethod == 9 && cardSelected == 0) {
+                    cardNo.setHint("Card No");
+                    cardNo.setInputType(InputType.TYPE_CLASS_NUMBER);
+                    selectCard.setVisibility(View.VISIBLE);
+                    cardName.setVisibility(View.VISIBLE);
+                    cardNo.setVisibility(View.VISIBLE);
+                    cvc.setVisibility(View.VISIBLE);
+                    expDate.setVisibility(View.VISIBLE);
+                    saveCard.setVisibility(View.VISIBLE);
+                    selectCard.setVisibility(View.VISIBLE);
+                } else if (paymentMethod == 9 && cardSelected == 1) {
+                    cardNo.setHint("Token");
+                    cardNo.setInputType(InputType.TYPE_CLASS_TEXT);
+                    cardNo.setVisibility(View.VISIBLE);
+                    cvc.setVisibility(View.VISIBLE);
+                } else {
+                    cardName.setVisibility(View.INVISIBLE);
+                    cardNo.setVisibility(View.INVISIBLE);
+                    cvc.setVisibility(View.INVISIBLE);
+                    expDate.setVisibility(View.INVISIBLE);
+                    saveCard.setVisibility(View.INVISIBLE);
+                    selectCard.setVisibility(View.INVISIBLE);
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
+
         List<String> methods = new ArrayList<>();
         methods.add("Select Payment Method");
         methods.add("Touch N Go");
@@ -130,7 +162,7 @@ public class MainActivity extends Activity implements PaymentResult, AdapterView
 
         ArrayAdapter<String> methodAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, methods);
         methodAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(methodAdapter);
+        methodSpinner.setAdapter(methodAdapter);
 
         Spinner cardSpinner = (Spinner) findViewById(R.id.card_selection);
         cardSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -138,12 +170,6 @@ public class MainActivity extends Activity implements PaymentResult, AdapterView
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 cardSelected = position;
 
-                EditText cardName = (EditText) findViewById(R.id.card_name);
-                EditText cardNo = (EditText) findViewById(R.id.card_no);
-                EditText cvc = (EditText) findViewById(R.id.cvc);
-                EditText expDate = (EditText) findViewById(R.id.exp_date);
-                CheckBox saveCard = (CheckBox) findViewById(R.id.save_card);
-                Spinner selectCard = (Spinner) findViewById(R.id.card_selection);
                 if (paymentMethod == 9 && cardSelected == 0) {
                     cardNo.setHint("Card No");
                     cardNo.setInputType(InputType.TYPE_CLASS_NUMBER);
@@ -183,43 +209,6 @@ public class MainActivity extends Activity implements PaymentResult, AdapterView
         ArrayAdapter<String> cardAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, cards);
         cardAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         cardSpinner.setAdapter(cardAdapter);
-    }
-
-    @Override
-    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        paymentMethod = position;
-        EditText cardName = (EditText) findViewById(R.id.card_name);
-        EditText cardNo = (EditText) findViewById(R.id.card_no);
-        EditText cvc = (EditText) findViewById(R.id.cvc);
-        EditText expDate = (EditText) findViewById(R.id.exp_date);
-        CheckBox saveCard = (CheckBox) findViewById(R.id.save_card);
-        Spinner selectCard = (Spinner) findViewById(R.id.card_selection);
-        if (position == 9 && cardSelected == 0) {
-            cardNo.setHint("Card No");
-            cardNo.setInputType(InputType.TYPE_CLASS_NUMBER);
-            selectCard.setVisibility(View.VISIBLE);
-            cardName.setVisibility(View.VISIBLE);
-            cardNo.setVisibility(View.VISIBLE);
-            cvc.setVisibility(View.VISIBLE);
-            expDate.setVisibility(View.VISIBLE);
-            saveCard.setVisibility(View.VISIBLE);
-            selectCard.setVisibility(View.VISIBLE);
-        } else if (position == 9 && cardSelected == 1) {
-            cardNo.setHint("Token");
-            cardNo.setInputType(InputType.TYPE_CLASS_TEXT);
-            cardNo.setVisibility(View.VISIBLE);
-            cvc.setVisibility(View.VISIBLE);
-        } else {
-            cardName.setVisibility(View.INVISIBLE);
-            cardNo.setVisibility(View.INVISIBLE);
-            cvc.setVisibility(View.INVISIBLE);
-            expDate.setVisibility(View.INVISIBLE);
-            saveCard.setVisibility(View.INVISIBLE);
-            selectCard.setVisibility(View.INVISIBLE);
-        }
-    }
-    public void onNothingSelected(AdapterView<?> arg0) {
-        // TODO Auto-generated method stub
     }
 
     private String getCheckoutID() {

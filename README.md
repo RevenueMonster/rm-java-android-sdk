@@ -27,12 +27,12 @@ dependencies {
 ```java
 try {
 	new Checkout(MainActivity.this).getInstance().
-	setEnv(<<Environment Parameter>>). // set environment
-	setWeChatAppID("<< WeChat Open Platform AppID >>"). // only use for wechatpay
-	setCardInfo("<<Card Holder Name>>","<<Card No>>","<<Cvc No>>","<<Exp Month>>","<<Exp Year>>","<<Country Code>>","<<Card Save>>"). // only use for new card 
-	setToken("<<Card Token>>","<<Cvc No>>"). // only use if use existing card token
-	setBankCode("<<Set Bank Code>>"). // only use for fpx, get the bank code from open api
-	pay(<<Method Parameter>>,"<<Get Checkout Id from API>>", new Result());
+		setEnv(<<Environment Parameter>>). // set environment
+		setWeChatAppID("<< WeChat Open Platform AppID >>"). // only use for wechatpay
+		setCardInfo("<<Card Holder Name>>","<<Card No>>","<<Cvc No>>","<<Exp Month>>","<<Exp Year>>","<<Country Code>>","<<Card Save>>"). // only use for new card 
+		setToken("<<Card Token>>","<<Cvc No>>"). // only use if use existing card token
+		setBankCode("<<Set Bank Code>>"). // only use for fpx, get the bank code from open api
+		pay(<<Method Parameter>>,"<<Get Checkout Id from API>>", new Result());
 } catch(Exception e) {
 	e.printStackTrace();
 }
@@ -50,11 +50,14 @@ static public class Result implements PaymentResult {
 	}
 }
 ```
+<br />
+
 ### Environment Parameter
 - SANDBOX      
 - PRODUCTION
 <br/>
 <br/>
+
 ### Method Parameter
 - WECHATPAY_MY
 - TNG_MY
@@ -66,3 +69,25 @@ static public class Result implements PaymentResult {
 - PRESTO_MY
 - GOBIZ_MY
 - FPX_MY
+
+
+## WeChatPay In-App Payment
+
+
+#### 1. Create a developer account on the WeChat Open Platform:
+- Go to https://open.weixin.qq.com/ and click Log In.
+- Navigate to Admin Center > Mobile Application > Create Mobile Application, and input name, short introduction, official website, and package name.
+
+<br>
+
+#### 2. Pass the app id when trigger payment:
+```java 
+	try {
+		new Checkout(MainActivity.this).getInstance().
+			setEnv(<<Environment Parameter>>). // set environment
+			setWeChatAppID("<< WeChat Open Platform AppID >>"). // only use for wechatpay
+			pay(<<Method Parameter>>,"<<Get Checkout Id from API>>", new Result());
+	} catch(Exception e) {
+		e.printStackTrace();
+	}
+```

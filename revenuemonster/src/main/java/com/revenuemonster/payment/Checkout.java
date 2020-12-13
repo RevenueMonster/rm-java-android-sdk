@@ -325,9 +325,9 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
                 return;
             }
 
-            if (!this.env.equals(Env.PRODUCTION)) {
-                EnvUtils.setEnv(EnvUtils.EnvEnum.SANDBOX);
-            }
+            // if (!this.env.equals(Env.PRODUCTION)) {
+            //     EnvUtils.setEnv(EnvUtils.EnvEnum.SANDBOX);
+            // }
 
             byte[] data = Base64.decode(prepayID, Base64.DEFAULT);
             this.isLeaveApp = false;

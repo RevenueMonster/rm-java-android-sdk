@@ -101,6 +101,27 @@ public class MainActivity extends Activity implements PaymentResult {
                                 c = c.setBankCode("TEST");
                                 method = Method.FPX_MY;
                                 break;
+
+                            case 11:
+                                method = Method.SHOPEEPAY_MY;
+                                break;
+
+                            case 12:
+                                method = Method.ZAPP_MY;
+                                break;
+
+                            case 13:
+                                method = Method.SENHENGPAY_MY;
+                                break;
+
+                            case 14:
+                                method = Method.PAYDEE_MY;
+                                break;
+
+                            case 15:
+                                method = Method.ALIPAYPLUS_MY;
+                                break;
+
                             default:
                                 return;
                         }
@@ -159,6 +180,11 @@ public class MainActivity extends Activity implements PaymentResult {
         methods.add("PrestoPay");
         methods.add("GoBiz");
         methods.add("Online Banking");
+        methods.add("ShopeePay");
+        methods.add("Zapp");
+        methods.add("SenHeng");
+        methods.add("Paydee");
+        methods.add("AliPay+");
 
         ArrayAdapter<String> methodAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, methods);
         methodAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);

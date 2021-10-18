@@ -75,6 +75,9 @@ public class BrowserActivity extends AppCompatActivity {
         webview.getSettings().setJavaScriptEnabled(true);
         webview.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
         webview.getSettings().setSupportMultipleWindows(true);
+        webview.getSettings().setUseWideViewPort(true);
+        webview.getSettings().setLoadWithOverviewMode(true);
+
         webview.setWebViewClient(new WebViewClient());
         webview.setWebChromeClient(new WebChromeClient());
         webview.loadUrl(url);

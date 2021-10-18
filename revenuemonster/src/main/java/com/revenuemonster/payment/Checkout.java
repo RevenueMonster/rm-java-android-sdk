@@ -249,6 +249,11 @@ public class Checkout implements Application.ActivityLifecycleCallbacks {
                     case PRESTO_MY:
                     case GOBIZ_MY:
                     case FPX_MY:
+                    case SHOPEEPAY_MY:
+                    case ZAPP_MY:
+                    case PAYDEE_MY:
+                    case ALIPAYPLUS_MY:
+                    case SENHENGPAY_MY:
                         this.openBrowser(url);
                         break;
 

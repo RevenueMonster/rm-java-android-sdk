@@ -15,4 +15,9 @@ public enum Method {
     PRESTO_MY,
     GOBIZ_MY,
     FPX_MY,
+    SHOPEEPAY_MY,
+    ZAPP_MY,
+    SENHENGPAY_MY,
+    PAYDEE_MY,
+    ALIPAYPLUS_MY
 }

@@ -7,8 +7,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
-
-import com.alipay.sdk.app.EnvUtils;
+import com.alipay.sdk.app.PayTask;
 import com.revenuemonster.payment.constant.Env;
 import com.revenuemonster.payment.constant.Method;
 import com.revenuemonster.payment.constant.PackageName;
@@ -21,13 +20,8 @@ import com.revenuemonster.payment.view.BrowserActivity;
 import com.tencent.mm.opensdk.modelbiz.WXOpenBusinessWebview;
 import com.tencent.mm.opensdk.openapi.IWXAPI;
 import com.tencent.mm.opensdk.openapi.WXAPIFactory;
-import com.alipay.sdk.app.PayTask;
-
 import org.json.JSONObject;
-
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Created by yussuf on 4/24/19.
